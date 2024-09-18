@@ -6,7 +6,11 @@ pub struct Vec3 {
 }
 
 impl Vec3 {
-    pub fn new(e: [f32; 3]) -> Vec3 {
+    pub fn new(x: f32, y: f32, z: f32) -> Vec3 {
+        Vec3 { e: [x, y, z] }
+    }
+    
+    pub fn from_array(e: [f32; 3]) -> Vec3 {
         Vec3 { e }
     }
 
