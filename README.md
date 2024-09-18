@@ -1,0 +1,1 @@
+I'm following [Ray Tracing In One Weekend](https://raytracing.github.io/books/RayTracingInOneWeekend.html) to learn Rust. Again, because it's been years and I've forgotten everything.
