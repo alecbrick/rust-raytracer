@@ -147,7 +147,7 @@ pub fn unit_vector(v: &Vec3) -> Vec3 {
     *v / v.length()
 }
 
-type Point3 = Vec3;
+pub type Point3 = Vec3;
 
 #[cfg(test)]
 mod tests {
