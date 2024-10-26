@@ -6,9 +6,25 @@ mod vec3;
 
 use crate::color::Color;
 use crate::ray::Ray;
-use crate::vec3::{Point3, Vec3, unit_vector};
+use crate::vec3::{Point3, Vec3, dot, unit_vector};
+
+fn hit_sphere(center: &Point3, radius: f32, r: &Ray) -> bool {
+    let ray_origin: Point3 = r.origin();
+    let ray_dir: Vec3 = r.direction();
+    let cq = *center - ray_origin;
+
+    let a = dot(&ray_dir, &ray_dir);
+    let b = -2.0 * dot(&ray_dir, &cq);
+    let c = dot(&cq, &cq) - radius.powi(2);
+
+    let discriminant = b.powi(2) - 4.0 * a * c;
+    return discriminant >= 0.0;
+}
 
 fn ray_color(r: &Ray) -> Color {
+    if hit_sphere(&Point3::new(0.0, 0.0, -1.0), 0.5, r) {
+        return Color::new(1.0, 0.0, 0.0);
+    }
     let direction: Vec3 = r.direction();
     let unit_direction = unit_vector(&direction);
     let a = 0.5 * (unit_direction.y() + 1.0);
