@@ -8,22 +8,29 @@ use crate::color::Color;
 use crate::ray::Ray;
 use crate::vec3::{Point3, Vec3, dot, unit_vector};
 
-fn hit_sphere(center: &Point3, radius: f32, r: &Ray) -> bool {
+fn hit_sphere(center: &Point3, radius: f32, r: &Ray) -> f32 {
     let ray_origin: Point3 = r.origin();
     let ray_dir: Vec3 = r.direction();
     let cq = *center - ray_origin;
 
-    let a = dot(&ray_dir, &ray_dir);
-    let b = -2.0 * dot(&ray_dir, &cq);
-    let c = dot(&cq, &cq) - radius.powi(2);
+    let a = ray_dir.length_squared();
+    let h = dot(&ray_dir, &cq);
+    let c = cq.length_squared() - radius.powi(2);
 
-    let discriminant = b.powi(2) - 4.0 * a * c;
-    return discriminant >= 0.0;
+    let discriminant = h.powi(2) - a * c;
+    if discriminant < 0.0 {
+        -1.0
+    } else {
+        (h - discriminant.sqrt()) / (a)
+    }
 }
 
 fn ray_color(r: &Ray) -> Color {
-    if hit_sphere(&Point3::new(0.0, 0.0, -1.0), 0.5, r) {
-        return Color::new(1.0, 0.0, 0.0);
+    let sphere_center = Point3::new(0.0, 0.0, -1.0);
+    let t = hit_sphere(&sphere_center, 0.5, r); 
+    if t > 0.0 {
+        let N = unit_vector(&(r.at(t) - sphere_center));
+        return 0.5 * Color::new(N.x() + 1.0, N.y() + 1.0, N.z() + 1.0);
     }
     let direction: Vec3 = r.direction();
     let unit_direction = unit_vector(&direction);
