@@ -1,36 +1,23 @@
+use hittable::Hittable;
 use log::info;
+use sphere::Sphere;
 
 mod color;
+mod hittable;
 mod ray;
+mod sphere;
 mod vec3;
 
 use crate::color::Color;
 use crate::ray::Ray;
 use crate::vec3::{Point3, Vec3, dot, unit_vector};
 
-fn hit_sphere(center: &Point3, radius: f32, r: &Ray) -> f32 {
-    let ray_origin: Point3 = r.origin();
-    let ray_dir: Vec3 = r.direction();
-    let cq = *center - ray_origin;
-
-    let a = ray_dir.length_squared();
-    let h = dot(&ray_dir, &cq);
-    let c = cq.length_squared() - radius.powi(2);
-
-    let discriminant = h.powi(2) - a * c;
-    if discriminant < 0.0 {
-        -1.0
-    } else {
-        (h - discriminant.sqrt()) / (a)
-    }
-}
-
 fn ray_color(r: &Ray) -> Color {
     let sphere_center = Point3::new(0.0, 0.0, -1.0);
-    let t = hit_sphere(&sphere_center, 0.5, r); 
-    if t > 0.0 {
-        let N = unit_vector(&(r.at(t) - sphere_center));
-        return 0.5 * Color::new(N.x() + 1.0, N.y() + 1.0, N.z() + 1.0);
+    let sphere = Sphere::new(sphere_center, 0.5);
+    if let Some(hit_record) = sphere.hit(r, 0.0, f32::MAX) {
+        let n = unit_vector(&(r.at(hit_record.t) - sphere_center));
+        return 0.5 * Color::new(n.x() + 1.0, n.y() + 1.0, n.z() + 1.0);
     }
     let direction: Vec3 = r.direction();
     let unit_direction = unit_vector(&direction);
