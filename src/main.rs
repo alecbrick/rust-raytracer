@@ -10,7 +10,7 @@ mod vec3;
 
 use crate::color::Color;
 use crate::ray::Ray;
-use crate::vec3::{Point3, Vec3, dot, unit_vector};
+use crate::vec3::{Point3, Vec3, unit_vector};
 
 fn ray_color(r: &Ray) -> Color {
     let sphere_center = Point3::new(0.0, 0.0, -1.0);
