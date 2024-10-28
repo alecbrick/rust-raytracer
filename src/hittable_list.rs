@@ -1,5 +1,9 @@
 use std::rc::Rc;
-use crate::hittable::{HitRecord, Hittable};
+use crate::{
+    hittable::{HitRecord, Hittable}, 
+    interval::Interval,
+    ray::Ray,
+};
 
 pub struct HittableList {
     objects: Vec<Rc<dyn Hittable>>
@@ -20,11 +24,11 @@ impl HittableList {
 }
 
 impl Hittable for HittableList {
-    fn hit(&self, r: &crate::ray::Ray, t_min: f32, t_max: f32) -> Option<HitRecord> {
-        let mut closest_so_far = t_max;
+    fn hit(&self, r: &Ray, ray_t: Interval) -> Option<HitRecord> {
+        let mut closest_so_far = ray_t.max;
         let mut ret: Option<HitRecord> = None;
         for object in &self.objects {
-            if let Some(hit_record) = object.hit(r, t_min, closest_so_far) {
+            if let Some(hit_record) = object.hit(r, Interval::new(ray_t.min, closest_so_far)) {
                 if hit_record.t < closest_so_far {
                     closest_so_far = hit_record.t;
                     ret = Some(hit_record)

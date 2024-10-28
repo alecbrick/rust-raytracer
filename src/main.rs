@@ -3,6 +3,7 @@ use std::rc::Rc;
 use color::Color;
 use hittable::Hittable;
 use hittable_list::HittableList;
+use interval::Interval;
 use log::info;
 use ray::Ray;
 use sphere::Sphere;
@@ -11,13 +12,14 @@ use vec3::{Point3, Vec3, unit_vector};
 mod color;
 mod hittable;
 mod hittable_list;
+mod interval;
 mod ray;
 mod sphere;
 mod utils;
 mod vec3;
 
 fn ray_color(r: &Ray, world: &dyn Hittable) -> Color {
-    if let Some(hit_record) = world.hit(r, 0.0, f32::MAX) {
+    if let Some(hit_record) = world.hit(r, Interval::new(0.0, f32::MAX)) {
         return 0.5 * (hit_record.normal + Color::new(1.0, 1.0, 1.0));
     }
     let direction: Vec3 = r.direction();
