@@ -1,23 +1,24 @@
+use std::rc::Rc;
+
+use color::Color;
 use hittable::Hittable;
+use hittable_list::HittableList;
 use log::info;
+use ray::Ray;
 use sphere::Sphere;
+use vec3::{Point3, Vec3, unit_vector};
 
 mod color;
 mod hittable;
+mod hittable_list;
 mod ray;
 mod sphere;
+mod utils;
 mod vec3;
 
-use crate::color::Color;
-use crate::ray::Ray;
-use crate::vec3::{Point3, Vec3, unit_vector};
-
-fn ray_color(r: &Ray) -> Color {
-    let sphere_center = Point3::new(0.0, 0.0, -1.0);
-    let sphere = Sphere::new(sphere_center, 0.5);
-    if let Some(hit_record) = sphere.hit(r, 0.0, f32::MAX) {
-        let n = unit_vector(&(r.at(hit_record.t) - sphere_center));
-        return 0.5 * Color::new(n.x() + 1.0, n.y() + 1.0, n.z() + 1.0);
+fn ray_color(r: &Ray, world: &dyn Hittable) -> Color {
+    if let Some(hit_record) = world.hit(r, 0.0, f32::MAX) {
+        return 0.5 * (hit_record.normal + Color::new(1.0, 1.0, 1.0));
     }
     let direction: Vec3 = r.direction();
     let unit_direction = unit_vector(&direction);
@@ -36,6 +37,12 @@ fn main() {
     if image_height < 1 {
         image_height = 1;
     }
+
+    // World
+
+    let mut world = HittableList::new();
+    world.add(Rc::new(Sphere::new(Point3::new(0.0, 0.0, -1.0), 0.5)));
+    world.add(Rc::new(Sphere::new(Point3::new(0.0, -100.5, -1.0), 100.0)));
 
     // Camera
     let focal_length: f32 = 1.0;
@@ -63,7 +70,7 @@ fn main() {
             let pixel_center: Vec3 = pixel_00_loc + (pixel_delta_u * i as f32) + (pixel_delta_v * j as f32);
             let ray_direction: Vec3 = pixel_center - camera_center;
             let pixel_ray: Ray = Ray::new(camera_center, ray_direction);
-            let pixel_color: Color = ray_color(&pixel_ray);
+            let pixel_color: Color = ray_color(&pixel_ray, &world);
             color::write_color(&pixel_color);
         }
     }
