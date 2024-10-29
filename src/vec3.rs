@@ -1,5 +1,7 @@
 use std::ops;
 
+use rand::{distributions::Uniform, random, thread_rng, Rng};
+
 #[derive(Debug, PartialEq, Clone, Copy)]
 pub struct Vec3 {
     e: [f32; 3],
@@ -12,6 +14,43 @@ impl Vec3 {
     
     pub fn from_array(e: [f32; 3]) -> Vec3 {
         Vec3 { e }
+    }
+
+    pub fn random() -> Vec3 {
+        Vec3 { e: [
+            random::<f32>(),
+            random::<f32>(),
+            random::<f32>(),
+        ]}
+    }
+
+    pub fn random_range(min: f32, max: f32) -> Vec3 {
+        let mut rng = thread_rng();
+        let dist = Uniform::new(min, max);
+        Vec3{ e: [
+            rng.sample(dist),
+            rng.sample(dist),
+            rng.sample(dist),
+        ]}
+    }
+
+    pub fn random_unit_vector() -> Vec3 {
+        loop {
+            let p = Vec3::random_range(-1.0, 1.0);
+            let lensq = p.length_squared();
+            if 1e-40 < lensq && lensq <= 1.0 {
+                return p / lensq.sqrt();
+            }
+        };
+    }
+
+    pub fn random_on_hemisphere(normal: &Vec3) -> Vec3 {
+        let on_unit_sphere = Vec3::random_unit_vector();
+        if dot(normal, &on_unit_sphere) > 0.0 {
+            on_unit_sphere
+        } else {
+            -on_unit_sphere
+        }
     }
 
     pub fn x(&self) -> f32 {

@@ -26,6 +26,7 @@ fn main() {
     let aspect_ratio: f32 = 16.0 / 9.0;
     let samples_per_pixel: i32 = 100;
     let image_width: i32 = 400;
+    let max_depth: i32 = 10;
 
     // World
     let mut world = HittableList::new();
@@ -35,7 +36,8 @@ fn main() {
     let camera = CameraBuilder {
         aspect_ratio,
         samples_per_pixel,
-        image_width
+        image_width,
+        max_depth,
     }.build();
     camera.render(&world);
 }

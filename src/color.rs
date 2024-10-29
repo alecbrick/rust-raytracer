@@ -2,10 +2,23 @@ use crate::{interval::Interval, vec3::Vec3};
 
 pub type Color = Vec3;
 
+pub fn linear_to_gamma(linear_component: f32) -> f32 {
+    if linear_component > 0.0 {
+        linear_component.sqrt()
+    } else {
+        0.0
+    }
+}
+
 pub fn write_color(pixel_color: &Color) {
-    let r = pixel_color.x();
-    let g = pixel_color.y();
-    let b = pixel_color.z();
+    let mut r = pixel_color.x();
+    let mut g = pixel_color.y();
+    let mut b = pixel_color.z();
+
+    // Apply a linear to gamma transform for gamma 2
+    r = linear_to_gamma(r);
+    g = linear_to_gamma(g);
+    b = linear_to_gamma(b);
 
     let intensity = Interval::new(0.0, 0.999);
 

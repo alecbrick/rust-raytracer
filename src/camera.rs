@@ -6,6 +6,7 @@ use crate::{color::{write_color, Color}, hittable::Hittable, interval::Interval,
 pub struct Camera {
     aspect_ratio: f32,
     samples_per_pixel: i32,
+    max_depth: i32,
     image_width: i32,
     image_height: i32,
     center: Point3,
@@ -18,12 +19,17 @@ pub struct CameraBuilder {
     pub aspect_ratio: f32,
     pub samples_per_pixel: i32,
     pub image_width: i32,
+    pub max_depth: i32,
 }
 
 impl Camera {
-    fn ray_color(&self, r: &Ray, world: &dyn Hittable) -> Color {
-        if let Some(hit_record) = world.hit(r, Interval::new(0.0, f32::MAX)) {
-            return 0.5 * (hit_record.normal + Color::new(1.0, 1.0, 1.0));
+    fn ray_color(&self, r: &Ray, depth: i32, world: &dyn Hittable) -> Color {
+        if depth <= 0 {
+            return Color::new(0.0, 0.0, 0.0);
+        }
+        if let Some(hit_record) = world.hit(r, Interval::new(0.001, f32::MAX)) {
+            let direction = hit_record.normal + Vec3::random_unit_vector();
+            return 0.5 * self.ray_color(&Ray::new(hit_record.p, direction), depth - 1, world);
         }
         let direction: Vec3 = r.direction();
         let unit_direction = unit_vector(&direction);
@@ -51,7 +57,7 @@ impl Camera {
                 let mut pixel_color = Color::new(0.0, 0.0, 0.0);
                 for _ in 0..self.samples_per_pixel {
                     let r: Ray = self.get_ray(i, j);
-                    pixel_color += self.ray_color(&r, world);
+                    pixel_color += self.ray_color(&r, self.max_depth, world);
                 }
                 let average_color = pixel_color / self.samples_per_pixel as f32;
                 write_color(&average_color);
@@ -91,6 +97,7 @@ impl CameraBuilder {
         Camera {
             aspect_ratio,
             samples_per_pixel: self.samples_per_pixel,
+            max_depth: self.max_depth,
             image_width,
             image_height,
             center,
