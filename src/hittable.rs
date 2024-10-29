@@ -1,8 +1,11 @@
-use crate::{interval::Interval, ray::Ray, vec3::{dot, Point3, Vec3}};
+use std::rc::Rc;
+
+use crate::{interval::Interval, material::Material, ray::Ray, vec3::{dot, Point3, Vec3}};
 
 pub struct HitRecord {
     pub p: Point3,
     pub normal: Vec3,
+    pub mat: Rc<dyn Material>,
     pub t: f32,
     pub front_face: bool,
 }
@@ -10,6 +13,7 @@ pub struct HitRecord {
 pub struct HitRecordBuilder {
     pub p: Point3,
     pub outward_normal: Vec3,
+    pub mat: Rc<dyn Material>,
     pub t: f32,
     pub r: Ray,
 }
@@ -20,6 +24,7 @@ impl HitRecordBuilder {
         HitRecord {
             p: self.p,
             normal: if front_face {self.outward_normal.clone()} else {-self.outward_normal.clone()},
+            mat: self.mat,
             t: self.t,
             front_face: front_face,
         }

@@ -72,6 +72,11 @@ impl Vec3 {
     pub fn length_squared(&self) -> f32 {
         self.e[0].powi(2) + self.e[1].powi(2) + self.e[2].powi(2)
     }
+
+    pub fn near_zero(&self) -> bool {
+        let s = 1e-8;
+        return self.e[0].abs() < s && self.e[1].abs() < s && self.e[2].abs() < s 
+    }
 }
 
 impl ops::Neg for Vec3 {
@@ -184,6 +189,10 @@ pub fn cross(u: &Vec3, v: &Vec3) -> Vec3 {
 
 pub fn unit_vector(v: &Vec3) -> Vec3 {
     *v / v.length()
+}
+
+pub fn reflect(v: &Vec3, n: &Vec3) -> Vec3 {
+    return *v - 2.0 * dot(v, n) * *n;
 }
 
 pub type Point3 = Vec3;

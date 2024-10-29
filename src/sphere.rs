@@ -1,18 +1,24 @@
+use std::rc::Rc;
+
+use crate::color::Color;
 use crate::hittable::{HitRecord, HitRecordBuilder, Hittable};
 use crate::interval::Interval;
+use crate::material::{Lambertian, Material};
 use crate::ray::Ray;
 use crate::vec3::{dot, unit_vector, Point3, Vec3};
 
 pub struct Sphere {
     center: Point3,
     radius: f32,
+    mat: Rc<dyn Material>,
 }
 
 impl Sphere {
-    pub fn new(center: Point3, radius: f32) -> Sphere {
+    pub fn new(center: Point3, radius: f32, mat: Rc<dyn Material>) -> Sphere {
         Sphere {
             center: center,
-            radius: radius.max(0.0)
+            radius: radius.max(0.0),
+            mat: mat
         }
     }
 }
@@ -44,6 +50,7 @@ impl Hittable for Sphere {
         let hit_record_builder = HitRecordBuilder {
             p: p,
             outward_normal: outward_normal,
+            mat: self.mat.clone(),
             t: t,
             r: r.clone(),
         };

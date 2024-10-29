@@ -28,8 +28,11 @@ impl Camera {
             return Color::new(0.0, 0.0, 0.0);
         }
         if let Some(hit_record) = world.hit(r, Interval::new(0.001, f32::MAX)) {
-            let direction = hit_record.normal + Vec3::random_unit_vector();
-            return 0.5 * self.ray_color(&Ray::new(hit_record.p, direction), depth - 1, world);
+            if let Some((attenuation, scattered)) = hit_record.mat.scatter(r, &hit_record) {
+                return attenuation * self.ray_color(&scattered, depth - 1, world);
+            } else {
+                return Color::new(0.0, 0.0, 0.0);
+            }
         }
         let direction: Vec3 = r.direction();
         let unit_direction = unit_vector(&direction);
