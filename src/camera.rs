@@ -1,9 +1,11 @@
 use log::info;
+use rand::random;
 
 use crate::{color::{write_color, Color}, hittable::Hittable, interval::Interval, ray::Ray, vec3::{unit_vector, Point3, Vec3}};
 
 pub struct Camera {
     aspect_ratio: f32,
+    samples_per_pixel: i32,
     image_width: i32,
     image_height: i32,
     center: Point3,
@@ -14,6 +16,7 @@ pub struct Camera {
 
 pub struct CameraBuilder {
     pub aspect_ratio: f32,
+    pub samples_per_pixel: i32,
     pub image_width: i32,
 }
 
@@ -27,6 +30,17 @@ impl Camera {
         let a = 0.5 * (unit_direction.y() + 1.0);
         return (1.0 - a) * Color::new(1.0, 1.0, 1.0) + a * Color::new(0.5, 0.7, 1.0);
     }
+
+    fn sample_square(&self) -> Vec3 {
+        Vec3::new(random::<f32>() - 0.5, random::<f32>() - 0.5, 0.0)
+    }
+
+    fn get_ray(&self, i: i32, j: i32) -> Ray {
+        let offset = self.sample_square();
+        let pixel_center: Vec3 = self.pixel00_loc + (self.pixel_delta_u * (i as f32 + offset.x())) + (self.pixel_delta_v * ((j as f32) + offset.y()));
+        let ray_direction: Vec3 = pixel_center - self.center;
+        Ray::new(self.center, ray_direction)
+    }
     
     pub fn render(&self, world: &dyn Hittable) {
         println!("P3\n{0} {1}\n255", self.image_width, self.image_height);
@@ -34,11 +48,13 @@ impl Camera {
             let lines_remaining = self.image_height - j;
             info!("\nScanlines remaining: {lines_remaining}");
             for i in 0..self.image_width {
-                let pixel_center: Vec3 = self.pixel00_loc + (self.pixel_delta_u * i as f32) + (self.pixel_delta_v * j as f32);
-                let ray_direction: Vec3 = pixel_center - self.center;
-                let pixel_ray: Ray = Ray::new(self.center, ray_direction);
-                let pixel_color: Color = self.ray_color(&pixel_ray, world);
-                write_color(&pixel_color);
+                let mut pixel_color = Color::new(0.0, 0.0, 0.0);
+                for _ in 0..self.samples_per_pixel {
+                    let r: Ray = self.get_ray(i, j);
+                    pixel_color += self.ray_color(&r, world);
+                }
+                let average_color = pixel_color / self.samples_per_pixel as f32;
+                write_color(&average_color);
             }
         }
     }
@@ -74,6 +90,7 @@ impl CameraBuilder {
 
         Camera {
             aspect_ratio,
+            samples_per_pixel: self.samples_per_pixel,
             image_width,
             image_height,
             center,
